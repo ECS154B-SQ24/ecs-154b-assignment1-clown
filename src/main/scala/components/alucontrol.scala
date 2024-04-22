@@ -23,6 +23,7 @@ import chisel3.util._
  * For more information, see Section 4.4 and A.5 of Patterson and Hennessy.
  * This is loosely based on figure 4.12
  */
+
 class ALUControl extends Module {
   val io = IO(new Bundle {
     val aluop     = Input(UInt(3.W))
@@ -32,8 +33,75 @@ class ALUControl extends Module {
     val operation = Output(UInt(5.W))
   })
 
-  io.operation := "b11111".U // Invalid
-
+io.operation := "b11111".U // Invalid
   //Your code goes here
-
+  when(io.aluop === "b1".U){
+    when(io.funct3 === "b000".U){
+      when(!io.funct7(5) === "b0".U){
+        io.operation := "b00100".U
+      }
+      when(!io.funct7(5) === "b1".U){
+        io.operation := Mux(!io.funct7(0), "b00001".U, "b00110".U)
+      }
+    }
+    when(io.funct3 === "b001".U){
+      io.operation := Mux(!io.funct7(0),"b10010".U,"b00111".U)
+    }
+    when(io.funct3 === "b010".U){
+      io.operation := Mux(!io.funct7(0),"b10110".U,"b11000".U)
+    }
+    when(io.funct3 === "b011".U){
+      io.operation := Mux(!io.funct7(0),"b10111".U,"b01000".U)
+    }
+    when(io.funct3 === "b100".U){
+      io.operation := Mux(!io.funct7(0),"b01111".U,"b01011".U)
+    }
+    when(io.funct3 === "b101".U){
+      when(!io.funct7(0) === "b0".U){
+        io.operation := "b01010".U
+      }
+      when(!io.funct7(0) === "b1".U){
+        io.operation := Mux(!io.funct7(5),"b10100".U,"b10000".U)
+      }
+    }
+    when(io.funct3 === "b110".U){
+      io.operation := Mux(!io.funct7(0),"b01110".U,"b11100".U)
+    }
+    when(io.funct3 === "b111".U){
+      io.operation := Mux(!io.funct7(0),"b01101".U,"b11011".U)
+    }
+  }
+  when(io.aluop === "b11".U){
+    when(io.funct3 === "b000".U){
+      when(!io.funct7(5) === "b0".U){
+        io.operation := "b00010".U
+      }
+      when(!io.funct7(5) === "b1".U){
+        io.operation := Mux(!io.funct7(0), "b00000".U, "b00101".U)
+      }
+    }
+    when(io.funct3 === "b001".U){
+      io.operation := "b10011".U
+    }
+    when(io.funct3 === "b101".U){
+      when(!io.funct7(5) === "b0".U){
+        io.operation := "b10001".U
+      }
+      when(!io.funct7(5) === "b1".U){
+        io.operation := Mux(!io.funct7(0), "b10101".U, "b01100".U)
+      }
+    }
+    when(io.funct3 === "b100".U){
+      io.operation := "b01001".U
+    }
+    when(io.funct3 === "b100".U){
+      io.operation := "b01001".U
+    }
+    when(io.funct3 === "b110".U){
+      io.operation := "b11010".U
+    }
+    when(io.funct3 === "b111".U){
+      io.operation := "b11001".U
+    }
+  }
 }
