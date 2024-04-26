@@ -24,14 +24,22 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
   val (cycleCount, _) = Counter(true.B, 1 << 30)
 
   // Connecting inputs and outputs of unused modules to DontCare
-  control.io         := DontCare
+  control.io := DontCare
+  registers.io := DontCare
+  aluControl.io := DontCare
+  alu.io := DontCare
+  immGen.io := DontCare
+  controlTransfer.io := DontCare
+  io.dmem <> DontCare
+
+  /*
   registers.io       <> controlTransfer.io.registers
   aluControl.io      <> controlTransfer.io.aluControl
   alu.io             <> controlTransfer.io.alu
   immGen.io          <> controlTransfer.io.immGen
   controlTransfer.io.dmem := DontCare
   io.dmem            := DontCare
-
+  */
   // FETCH
   io.imem.address := pc
   io.imem.valid := true.B
@@ -70,6 +78,8 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
   alu.io.operation := aluControl.io.operation
   alu.io.operand1 := registers.io.readdata1
   alu.io.operand2 := registers.io.readdata2
+
+  controlTransfer.io.controltransferop := control.io.controltransferop
 
   // Defining and connecting the next program counter module
   /*val nextpc = Module(new NextPCModule())
