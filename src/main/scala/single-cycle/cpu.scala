@@ -40,6 +40,7 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
   controlTransfer.io.dmem := DontCare
   io.dmem            := DontCare
   */
+
   // FETCH
   io.imem.address := pc
   io.imem.valid := true.B
@@ -79,14 +80,10 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
   alu.io.operand1 := registers.io.readdata1
   alu.io.operand2 := registers.io.readdata2
 
-  controlTransfer.io.controltransferop := control.io.controltransferop
+  //controlTransfer.io.controltransferop := control.io.controltransferop
 
   // Defining and connecting the next program counter module
-  /*val nextpc = Module(new NextPCModule())
-  nextpc.io.pc_or_x := pc
-  pc := nextpc.io.nextpc*/
-
-  val nextpc = controlTransfer.io.nextpc
+  pc := pc + 4.U
 }
 
 /*
