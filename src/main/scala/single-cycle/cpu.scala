@@ -23,15 +23,16 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
   val controlTransfer = Module(new ControlTransferUnit())
   val (cycleCount, _) = Counter(true.B, 1 << 30)
 
-  control.io := DontCare
-  registers.io := DontCare
-  aluControl.io := DontCare
-  alu.io := DontCare
-  immGen.io := DontCare
-  controlTransfer.io := DontCare
-  io.dmem <> DontCare
+  // Connecting inputs and outputs of unused modules to DontCare
+  control.io         := DontCare
+  registers.io       <> controlTransfer.io.registers
+  aluControl.io      <> controlTransfer.io.aluControl
+  alu.io             <> controlTransfer.io.alu
+  immGen.io          <> controlTransfer.io.immGen
+  controlTransfer.io.dmem := DontCare
+  io.dmem            := DontCare
 
-  //FETCH
+  // FETCH
   io.imem.address := pc
   io.imem.valid := true.B
 
@@ -42,8 +43,40 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
     instruction := io.imem.instruction(31, 0)
   }
 
-  //Your code goes here
+  // Extracting instruction fields
+  val opcode = instruction(6,0)
+  val rd = instruction(11,7)
+  val funct3 = instruction(14,12)
+  val rs1 = instruction(19,15)
+  val rs2 = instruction(24,20)
+  val funct7 = instruction(31,25)
 
+  // Setting control signals based on opcode
+  control.io.opcode := opcode
+
+  // Reading data from register file
+  registers.io.readreg1 := rs1
+  registers.io.readreg2 := rs2
+  registers.io.writereg := rd
+  registers.io.wen := (registers.io.writereg =/= 0.U)
+  registers.io.writedata := alu.io.result
+
+  // Setting ALU control signals
+  aluControl.io.aluop := control.io.aluop
+  aluControl.io.funct3 := funct3
+  aluControl.io.funct7 := funct7
+
+  // Connecting ALU inputs and control signals
+  alu.io.operation := aluControl.io.operation
+  alu.io.operand1 := registers.io.readdata1
+  alu.io.operand2 := registers.io.readdata2
+
+  // Defining and connecting the next program counter module
+  /*val nextpc = Module(new NextPCModule())
+  nextpc.io.pc_or_x := pc
+  pc := nextpc.io.nextpc*/
+
+  val nextpc = controlTransfer.io.nextpc
 }
 
 /*

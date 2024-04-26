@@ -35,6 +35,7 @@ class ALUControl extends Module {
 
 io.operation := "b11111".U // Invalid
   //Your code goes here
+  //First when checks whether or not aluop is 1
   when(io.aluop === "b1".U){
     when(io.funct3 === "b000".U){
       when(!io.funct7(5) === "b0".U){
@@ -71,6 +72,7 @@ io.operation := "b11111".U // Invalid
       io.operation := Mux(!io.funct7(0),"b01101".U,"b11011".U)
     }
   }
+  //First when checks whether or not aluop is 3
   when(io.aluop === "b11".U){
     when(io.funct3 === "b000".U){
       when(!io.funct7(5) === "b0".U){
