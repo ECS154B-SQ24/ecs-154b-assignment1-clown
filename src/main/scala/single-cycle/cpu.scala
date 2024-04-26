@@ -80,9 +80,7 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
   alu.io.operand1 := registers.io.readdata1
   alu.io.operand2 := registers.io.readdata2
 
-  //controlTransfer.io.controltransferop := control.io.controltransferop
-
-  // Defining and connecting the next program counter module
+  // increments the program counter
   pc := pc + 4.U
 }
 
