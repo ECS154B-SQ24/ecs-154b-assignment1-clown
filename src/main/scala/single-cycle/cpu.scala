@@ -32,15 +32,6 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
   controlTransfer.io := DontCare
   io.dmem <> DontCare
 
-  /*
-  registers.io       <> controlTransfer.io.registers
-  aluControl.io      <> controlTransfer.io.aluControl
-  alu.io             <> controlTransfer.io.alu
-  immGen.io          <> controlTransfer.io.immGen
-  controlTransfer.io.dmem := DontCare
-  io.dmem            := DontCare
-  */
-
   // FETCH
   io.imem.address := pc
   io.imem.valid := true.B
