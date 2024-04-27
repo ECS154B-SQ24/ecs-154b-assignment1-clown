@@ -23,7 +23,6 @@ import chisel3.util._
  * For more information, see Section 4.4 and A.5 of Patterson and Hennessy.
  * This is loosely based on figure 4.12
  */
-
 class ALUControl extends Module {
   val io = IO(new Bundle {
     val aluop     = Input(UInt(3.W))
@@ -33,77 +32,78 @@ class ALUControl extends Module {
     val operation = Output(UInt(5.W))
   })
 
-io.operation := "b11111".U // Invalid
+  io.operation := "b11111".U // Invalid
+
   //Your code goes here
-  //First when checks whether or not aluop is 1
-  when(io.aluop === "b1".U){
-    when(io.funct3 === "b000".U){
-      when(!io.funct7(5) === "b0".U){
-        io.operation := "b00100".U
-      }
-      when(!io.funct7(5) === "b1".U){
-        io.operation := Mux(!io.funct7(0), "b00001".U, "b00110".U)
-      }
+
+  // switch (io.funct3) {
+  // is("b000".U) {
+  //   io.operation := Mux(!io.funct7(5), Mux(io.aluop(0.U) === true.B, "b00001".U, "b00100".U), Mux(io.aluop(0.U) === true.B, "b00110".U, "b11111".U))
+  // } // add - sub b00100 - mul b00110 - Invalid
+  //   is ("b001".U) { io.operation := "b10010".U}//sll
+  //   is ("b010".U) {io.operation := "b10110".U} //slt
+  //   is ("b011".U) {io.operation := "b10111".U} //sltu
+  //   is ("b100".U) {io.operation := "b01111".U} //xor
+  //   is ("b101".U) {io.operation := Mux( !io.funct7(5),"b10100".U, "b10000".U)} //srl - sra
+  //   is ("b110".U) {io.operation := "b01110".U} //or
+  //   is ("b111".U) { io.operation := "b01101".U} //and
+  // }
+
+  switch(io.aluop) {
+    is(0.U){
+      io.operation := "b11111".U
     }
-    when(io.funct3 === "b001".U){
-      io.operation := Mux(!io.funct7(0),"b10010".U,"b00111".U)
-    }
-    when(io.funct3 === "b010".U){
-      io.operation := Mux(!io.funct7(0),"b10110".U,"b11000".U)
-    }
-    when(io.funct3 === "b011".U){
-      io.operation := Mux(!io.funct7(0),"b10111".U,"b01000".U)
-    }
-    when(io.funct3 === "b100".U){
-      io.operation := Mux(!io.funct7(0),"b01111".U,"b01011".U)
-    }
-    when(io.funct3 === "b101".U){
-      when(!io.funct7(0) === "b0".U){
-        io.operation := "b01010".U
-      }
-      when(!io.funct7(0) === "b1".U){
-        io.operation := Mux(!io.funct7(5),"b10100".U,"b10000".U)
-      }
-    }
-    when(io.funct3 === "b110".U){
-      io.operation := Mux(!io.funct7(0),"b01110".U,"b11100".U)
-    }
-    when(io.funct3 === "b111".U){
-      io.operation := Mux(!io.funct7(0),"b01101".U,"b11011".U)
-    }
-  }
-  //First when checks whether or not aluop is 3
-  when(io.aluop === "b11".U){
-    when(io.funct3 === "b000".U){
-      when(!io.funct7(5) === "b0".U){
-        io.operation := "b00010".U
-      }
-      when(!io.funct7(5) === "b1".U){
-        io.operation := Mux(!io.funct7(0), "b00000".U, "b00101".U)
+    is(1.U) { // 64 BIT R TYPE
+      switch(io.funct3) {
+        is("b000".U) { io.operation := Mux(!io.funct7(5), Mux(!io.funct7(0), "b00001".U, "b00110".U),"b00100".U)} // ADD - SUB - MUL
+        is("b001".U) { io.operation := Mux(!io.funct7(0), "b10010".U, "b00111".U) } // SLL - MULH
+        is("b010".U) { io.operation := Mux(!io.funct7(0), "b10110".U, "b11000".U) } // SLT - MULHSU
+        is("b011".U) { io.operation := Mux(!io.funct7(0), "b10111".U, "b01000".U) } // SLTU - MULHU
+        is("b100".U) { io.operation := Mux(!io.funct7(0), "b01111".U, "b01011".U) } // XOR - DIV
+        is("b101".U) { io.operation := Mux(!io.funct7(0), Mux(!io.funct7(5), "b10100".U, "b10000".U), "b01010".U) } // SRL - SRA - DIVU
+        is("b110".U) { io.operation := Mux(!io.funct7(0), "b01110".U, "b11100".U) } // OR - REM
+        is("b111".U) { io.operation := Mux(!io.funct7(0), "b01101".U, "b11011".U) } // AND - REMU
       }
     }
-    when(io.funct3 === "b001".U){
-      io.operation := "b10011".U
-    }
-    when(io.funct3 === "b101".U){
-      when(!io.funct7(5) === "b0".U){
-        io.operation := "b10001".U
+    is(2.U) { //64 BIT I TYPE (IDK WHAT TO PUT IN HERE, IGNORE)
+      switch(io.funct3) {
+        is("b000".U) { io.operation := "b01100".U } // ADDI 
+        is("b001".U) { io.operation := "b00110".U } // SLLI
+        is("b010".U) { io.operation := "b01010".U } // SLTI
+        is("b011".U) { io.operation := "b01011".U } // SLTUI
+        is("b100".U) { io.operation := "b00010".U } // XORI
+        is("b101".U) { io.operation := Mux(!io.funct7(0), "b01000".U, "b00100".U) } // SRLI - SRAI
+        is("b110".U) { io.operation := "b00001".U } // ORI
+        is("b111".U) { io.operation := "b00000".U } // ANDI
       }
-      when(!io.funct7(5) === "b1".U){
-        io.operation := Mux(!io.funct7(0), "b10101".U, "b01100".U)
+    }
+    is(3.U){ // 32 BIT R TYPE 
+      switch(io.funct3){
+        is("b000".U) { io.operation := Mux(!io.funct7(0), Mux(!io.funct7(5), "b00000".U, "b00010".U),"b00101".U)}    
+        is("b001".U) { io.operation := "b10011".U } // SLLW
+        is("b100".U) { io.operation := "b01001".U } // DIVW
+        is("b101".U) { io.operation := Mux(!io.funct7(0), Mux(!io.funct7(5), "b10101".U, "b10001".U), "b01100".U) } // SRLW - SRAW - DIVUW
+        is("b110".U) { io.operation := "b11010".U } // REMW
+        is("b111".U) { io.operation := "b11001".U } // REMUW   
+        }
+    }
+    is (4.U){ // 32 BIT I TYPE (IDK WHAT TO PUT IN HERE, IGNORE)
+      switch(io.funct3){
+        is("b000".U) { io.operation := "b01100".U } // ADDI 
+        is("b001".U) { io.operation := "b00110".U } // SLLI
+        is("b010".U) { io.operation := "b01010".U } // SLTI
+        is("b011".U) { io.operation := "b01011".U } // SLTUI
+        is("b100".U) { io.operation := "b00010".U } // XORI
+        is("b101".U) { io.operation := Mux(!io.funct7(0), "b01000".U, "b00100".U) } // SRLI - SRAI
+        is("b110".U) { io.operation := "b00001".U } // ORI
+        is("b111".U) { io.operation := "b00000".U } // ANDI
       }
     }
-    when(io.funct3 === "b100".U){
-      io.operation := "b01001".U
-    }
-    when(io.funct3 === "b100".U){
-      io.operation := "b01001".U
-    }
-    when(io.funct3 === "b110".U){
-      io.operation := "b11010".U
-    }
-    when(io.funct3 === "b111".U){
-      io.operation := "b11001".U
+    is (5.U){ //Non-Arthimetic instruction
+      switch(io.funct3){
+        is("b000".U){io.operation := Mux( !io.funct7(5), "b11101".U, "b11110".U)} // LOAD STORE IDK MADE UP
+        is("b111".U){io.operation := "b111111".U}// INVALID
+      }
     }
   }
 }
